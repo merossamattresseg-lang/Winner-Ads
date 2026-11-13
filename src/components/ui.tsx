@@ -24,7 +24,7 @@ const tierStyles: Record<Tier, string> = {
   winner: "bg-lime-soft text-lime-text border border-lime-line",
   testing: "bg-white text-body border border-line-2",
 };
-const tierLabels: Record<Tier, string> = { super: "سوبر وينر", winner: "وينر", testing: "بيتجرب" };
+const tierLabels: Record<Tier, string> = { super: "رابح مؤكد", winner: "رابح", testing: "قيد الاختبار" };
 
 export function TierBadge({ score, tier }: { score?: number; tier?: Tier }) {
   const t = tier ?? tierOf(score ?? 0);
@@ -34,7 +34,7 @@ export function TierBadge({ score, tier }: { score?: number; tier?: Tier }) {
 export function ScoreRing({ score, size = 48 }: { score: number; size?: number }) {
   const dash = Math.round(score * 1.445);
   return (
-    <div className="relative shrink-0" style={{ width: size, height: size }} title="سكور الوينر">
+    <div className="relative shrink-0" style={{ width: size, height: size }} title="التقييم">
       <svg width={size} height={size} viewBox="0 0 56 56" aria-hidden="true">
         <circle cx="28" cy="28" r="23" fill="none" stroke="#E4E7EC" strokeWidth="6" />
         <circle cx="28" cy="28" r="23" fill="none" stroke={score >= 60 ? "#65A30D" : "#98A2B3"} strokeWidth="6" strokeLinecap="round" strokeDasharray={`${dash} 145`} transform="rotate(-90 28 28)" />

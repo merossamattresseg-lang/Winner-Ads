@@ -21,15 +21,15 @@ export default async function HomePage() {
       </header>
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4">
-        <Stat label="وينر جديد النهارده" value="23" note="+6 عن امبارح" />
+        <Stat label="منتجات رابحة جديدة اليوم" value="23" note="+6 عن الأمس" />
         <Stat label="إعلانات جديدة عند منافسينك" value="41" note="من 8 صفحات" />
         <Stat label="منتجات محفوظة" value="12" note="3 لقينالهم مورد" />
-        <Stat label="متوسط سكور المحفوظات" value="71" note="وينر" />
+        <Stat label="متوسط سكور المحفوظات" value="71" note="رابح" />
       </div>
 
       <section className="flex flex-col gap-3.5">
         <div className="flex items-baseline justify-between">
-          <h2 className="font-display text-[22px] font-bold">وينر النهارده</h2>
+          <h2 className="font-display text-[22px] font-bold">الأكثر ربحًا اليوم</h2>
           <Link href="/search" className="text-sm font-semibold text-blue-700">شوف الكل</Link>
         </div>
         <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-4">

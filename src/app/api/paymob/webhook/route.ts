@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { verifyHmac } from "@/lib/paymob";
+import { sendEmail } from "@/lib/email";
+import { sendCapiEvent } from "@/lib/meta";
 import { createAdminClient } from "@/lib/supabase/server";
+
+const REFERRAL_POINTS = 1000;
 
 // Paymob بيبعت هنا نتيجة كل عملية دفع. الاشتراك بيتفعل من هنا بس.
 export async function POST(req: Request) {
@@ -46,6 +50,30 @@ export async function POST(req: Request) {
     if (current) await admin.from("subscriptions").update({ plan_id: planId, current_period_end: end }).eq("id", current.id);
     else await admin.from("subscriptions").insert({ user_id: userId, plan_id: planId, status: "active", current_period_end: end });
     if (plan?.monthly_points) await admin.from("credits_ledger").insert({ user_id: userId, delta: plan.monthly_points, reason: `اشتراك ${planId} ${txId}` });
+
+    // مكافأة الإحالة: مرة واحدة عند أول اشتراك للعميل المُحال.
+    const { data: prof } = await admin.from("profiles").select("full_name, phone, referred_by, referral_rewarded").eq("id", userId).single();
+    if (prof?.referred_by && !prof.referral_rewarded) {
+      await admin.from("profiles").update({ referral_rewarded: true }).eq("id", userId);
+      await admin.from("credits_ledger").insert([
+        { user_id: userId, delta: REFERRAL_POINTS, reason: "مكافأة إحالة" },
+        { user_id: prof.referred_by, delta: REFERRAL_POINTS, reason: "مكافأة إحالة" },
+      ]);
+    }
+
+    const { data: authUser } = await admin.auth.admin.getUserById(userId);
+    const email = authUser.user?.email;
+    const { data: planRow } = await admin.from("plans").select("name").eq("id", planId).single();
+    const amount = Number(obj.amount_cents ?? 0) / 100;
+    if (email) await sendEmail({ to: email, kind: "receipt", userId, ref: txId, ctx: { name: prof?.full_name, plan: planRow?.name ?? planId, amount, until: new Date(end).toLocaleDateString("ar-EG"), points: plan?.monthly_points } });
+    await sendCapiEvent({ name: "Purchase", eventId: `pay_${txId}`, email, phone: prof?.phone, userId, value: amount, path: "/pricing" });
+  }
+
+  if (status === "failed" && match) {
+    const userId = match[2];
+    const admin2 = createAdminClient();
+    const { data: authUser } = await admin2!.auth.admin.getUserById(userId);
+    if (authUser.user?.email) await sendEmail({ to: authUser.user.email, kind: "payment_failed", userId, ref: txId });
   }
   return NextResponse.json({ ok: true });
 }

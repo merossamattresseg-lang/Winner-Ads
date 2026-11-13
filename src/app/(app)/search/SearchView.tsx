@@ -88,9 +88,9 @@ export function SearchView({ initialQuery, ads }: { initialQuery: string; ads: S
           <span>التصنيف</span>
           <select value={tier} onChange={(e) => setTier(e.target.value)} className="h-[42px] rounded-[10px] border border-line-2 bg-white px-2.5 text-sm font-semibold text-text">
             <option value="الكل">الكل</option>
-            <option value="super">سوبر وينر</option>
-            <option value="winner">وينر</option>
-            <option value="testing">بيتجرب</option>
+            <option value="super">رابح مؤكد</option>
+            <option value="winner">رابح</option>
+            <option value="testing">قيد الاختبار</option>
           </select>
         </label>
         {[["الدولة", "مصر"], ["نوع الكرييتيف", "فيديو وصورة"], ["زرار الإعلان", "اطلب دلوقتي"], ["الترتيب", "أعلى سكور"]].map(([l, v]) => (
@@ -126,9 +126,9 @@ export function SearchView({ initialQuery, ads }: { initialQuery: string; ads: S
 
       <div className="flex flex-wrap items-center gap-2">
         <b className="text-base">{results.length} إعلان</b>
-        <span className="rounded-full bg-ink px-3 py-1 text-[13px] font-bold text-lime">سوبر وينر {counts.super}</span>
-        <span className="rounded-full border border-lime-line bg-lime-soft px-3 py-1 text-[13px] font-bold text-lime-text">وينر {counts.winner}</span>
-        <span className="rounded-full border border-line-2 bg-[#F2F4F7] px-3 py-1 text-[13px] font-semibold text-body">بيتجرب {counts.testing}</span>
+        <span className="rounded-full bg-ink px-3 py-1 text-[13px] font-bold text-lime">رابح مؤكد {counts.super}</span>
+        <span className="rounded-full border border-lime-line bg-lime-soft px-3 py-1 text-[13px] font-bold text-lime-text">رابح {counts.winner}</span>
+        <span className="rounded-full border border-line-2 bg-[#F2F4F7] px-3 py-1 text-[13px] font-semibold text-body">قيد الاختبار {counts.testing}</span>
       </div>
 
       {results.length ? (

@@ -32,7 +32,7 @@ export default async function AdminPage() {
   const mrr = (plans ?? []).reduce((sum, p) => sum + p.price_egp * (subsByPlan[p.id] ?? 0), 0);
   const activeSubs = subs?.length ?? 0;
   const maxSubs = Math.max(1, ...Object.values(subsByPlan));
-  const nav = ["نظرة عامة", "الباقات", "معادلة الوينر", "حاسبة الربح", "المدفوعات"];
+  const nav = ["نظرة عامة", "الباقات", "معادلة التقييم", "حاسبة الربح", "المدفوعات"];
   const anchors = ["overview", "plans", "score", "profit", "payments"];
 
   return (
@@ -96,7 +96,7 @@ export default async function AdminPage() {
 
             <Card className="flex flex-col gap-3.5">
               <span id="score" />
-              <H2>أوزان معادلة الوينر</H2>
+              <H2>أوزان معادلة التقييم</H2>
               <form action={saveScore} className="flex flex-col gap-3">
                 {(Object.keys(weightLabels) as (keyof ScoreSettings["weights"])[]).map((k) => (
                   <label key={k} className="grid grid-cols-[150px_minmax(0,1fr)] items-center gap-3 text-sm">
@@ -108,8 +108,8 @@ export default async function AdminPage() {
                   <label className="flex flex-col gap-1 text-xs text-muted">أيام للدرجة الكاملة<input name="c_days" type="number" defaultValue={score.caps.days} className={input} /></label>
                   <label className="flex flex-col gap-1 text-xs text-muted">نسخ للدرجة الكاملة<input name="c_copies" type="number" defaultValue={score.caps.copies} className={input} /></label>
                   <label className="flex flex-col gap-1 text-xs text-muted">معلنين للدرجة الكاملة<input name="c_advertisers" type="number" defaultValue={score.caps.advertisers} className={input} /></label>
-                  <label className="flex flex-col gap-1 text-xs text-muted">وينر من<input name="t_winner" type="number" defaultValue={score.thresholds.winner} className={input} /></label>
-                  <label className="flex flex-col gap-1 text-xs text-muted">سوبر وينر من<input name="t_super" type="number" defaultValue={score.thresholds.super} className={input} /></label>
+                  <label className="flex flex-col gap-1 text-xs text-muted">رابح من<input name="t_winner" type="number" defaultValue={score.thresholds.winner} className={input} /></label>
+                  <label className="flex flex-col gap-1 text-xs text-muted">رابح مؤكد من<input name="t_super" type="number" defaultValue={score.thresholds.super} className={input} /></label>
                 </div>
                 <button className="h-10 self-start rounded-[10px] bg-ink px-4 text-sm font-semibold text-white">احفظ وأعد الحساب</button>
               </form>
