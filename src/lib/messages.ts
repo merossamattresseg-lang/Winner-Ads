@@ -1,9 +1,9 @@
 import { SITE_URL } from "./site";
 
 // نصوص الرسائل التلقائية (البريد وواتساب) في مكان واحد عشان تتعدل بسهولة.
-export type MessageKind = "welcome" | "inactive" | "trial_ending" | "receipt" | "payment_failed" | "renewal";
+export type MessageKind = "welcome" | "inactive" | "trial_ending" | "receipt" | "payment_failed" | "renewal" | "competitor";
 
-type Ctx = { name?: string | null; plan?: string; amount?: number; until?: string; points?: number; credits?: number };
+type Ctx = { note?: string; name?: string | null; plan?: string; amount?: number; until?: string; points?: number; credits?: number };
 
 export function buildMessage(kind: MessageKind, c: Ctx) {
   const hi = `مرحبًا ${c.name || ""}`.trim();
@@ -18,6 +18,8 @@ export function buildMessage(kind: MessageKind, c: Ctx) {
       return { subject: "فاتورة اشتراكك", title: `تم تفعيل اشتراك ${c.plan ?? ""}`, body: `المبلغ: ${c.amount ?? 0} ج.م · ساري حتى ${c.until ?? ""} · رصيدك ${c.points?.toLocaleString("en-US") ?? 0} نقطة.`, cta: "الذهاب للحساب", url: `${SITE_URL}/account`, wa: `${hi}، تم تفعيل اشتراك ${c.plan ?? ""} حتى ${c.until ?? ""}.` };
     case "payment_failed":
       return { subject: "لم يكتمل الدفع", title: "لم يكتمل الدفع", body: "لم يُخصم أي مبلغ. يمكنك المحاولة مرة أخرى أو استخدام وسيلة دفع مختلفة.", cta: "إعادة المحاولة", url: `${SITE_URL}/pricing`, wa: `${hi}، لم يكتمل الدفع. رابط جديد: ${SITE_URL}/pricing` };
+    case "competitor":
+      return { subject: c.note ?? "إعلانات جديدة من منافسيك", title: "إعلانات جديدة من منافسيك", body: c.note ?? "", cta: "عرض الإعلانات", url: `${SITE_URL}/dashboard`, wa: `${c.note ?? ""}: ${SITE_URL}/dashboard` };
     case "renewal":
       return { subject: "يتجدد اشتراكك بعد 3 أيام", title: "تذكير بالتجديد", body: `يتجدد اشتراك ${c.plan ?? ""} يوم ${c.until ?? ""} بقيمة ${c.amount ?? 0} ج.م.`, cta: "إدارة الاشتراك", url: `${SITE_URL}/account`, wa: `${hi}، يتجدد اشتراكك يوم ${c.until ?? ""} بقيمة ${c.amount ?? 0} ج.م.` };
   }

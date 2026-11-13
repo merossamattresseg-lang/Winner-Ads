@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { cheapestCost, productTrend } from "@/lib/mock-data";
+
+export const metadata = { title: "أفضل المنتجات" };
 import { getAds } from "@/lib/data";
 
 function sparkPoints(vals: number[]) {
@@ -47,9 +49,9 @@ export default async function ProductsPage() {
                 <td className="px-3.5 py-3"><span className="rounded-lg bg-lime-soft px-2 py-1 font-display font-bold text-lime-text">{r.score}</span></td>
                 <td className="px-3.5 py-3">{r.advertisers}</td>
                 <td className="px-3.5 py-3">{r.copies}</td>
-                <td className="px-3.5 py-3">{r.sellPrice} ج</td>
+                <td className="px-3.5 py-3">{r.sellPrice ? `${r.sellPrice} ج.م` : "-"}</td>
                 <td className="px-3.5 py-3">{r.cost ? `${r.cost} ج` : "لسه"}</td>
-                <td className="px-3.5 py-3 font-bold text-lime-deep">{r.cost ? `${Math.round((1 - r.cost / r.sellPrice) * 100)}%` : "-"}</td>
+                <td className="px-3.5 py-3 font-bold text-lime-deep">{r.cost && r.sellPrice ? `${Math.round((1 - r.cost / r.sellPrice) * 100)}%` : "-"}</td>
                 <td className="px-3.5 py-3">
                   <div className="flex items-center gap-2">
                     <svg width="110" height="32" viewBox="0 0 110 32" role="img" aria-label="ترند الإعلانات الجديدة">

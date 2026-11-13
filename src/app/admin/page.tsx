@@ -46,6 +46,8 @@ export default async function AdminPage() {
           {nav.map((n, i) => (
             <a key={n} href={`#${anchors[i]}`} className="flex h-[42px] items-center rounded-[10px] px-3 text-[15px] font-medium text-line-2 hover:bg-ink-2">{n}</a>
           ))}
+          <a href="/admin/users" className="flex h-[42px] items-center rounded-[10px] px-3 text-[15px] font-bold text-lime hover:bg-ink-2">العملاء</a>
+          <a href="/admin/data" className="flex h-[42px] items-center rounded-[10px] px-3 text-[15px] font-bold text-lime hover:bg-ink-2">مصادر البيانات</a>
         </nav>
       </aside>
 
