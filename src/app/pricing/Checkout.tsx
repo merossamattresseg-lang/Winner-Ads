@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { plans, type PlanId } from "@/lib/mock-data";
+import type { Plan } from "@/lib/data";
 
 const methods = [
   { id: "card", label: "كارت" },
@@ -21,12 +21,12 @@ function loadPixel(src: string) {
   });
 }
 
-export function Checkout({ paymentsReady }: { paymentsReady: boolean }) {
-  const [planId, setPlanId] = useState<PlanId>("pro");
+export function Checkout({ paymentsReady, plans }: { paymentsReady: boolean; plans: Plan[] }) {
+  const [planId, setPlanId] = useState(plans.find((p) => p.popular)?.id ?? plans[0]?.id);
   const [method, setMethod] = useState<(typeof methods)[number]["id"]>("card");
   const [status, setStatus] = useState<"idle" | "loading" | "pixel" | "error">("idle");
   const [message, setMessage] = useState("");
-  const plan = plans.find((p) => p.id === planId)!;
+  const plan = plans.find((p) => p.id === planId) ?? plans[0];
 
   async function startPayment(form: FormData) {
     setStatus("loading");
@@ -37,6 +37,10 @@ export function Checkout({ paymentsReady }: { paymentsReady: boolean }) {
       body: JSON.stringify({ planId, method, name: form.get("name"), email: form.get("email"), phone: form.get("phone") }),
     });
     const data = await res.json().catch(() => ({}));
+    if (res.status === 401) {
+      window.location.href = "/login?next=/pricing";
+      return;
+    }
     if (!res.ok) {
       setStatus("error");
       setMessage(data.message ?? "حصلت مشكلة، جرب تاني");
@@ -73,7 +77,7 @@ export function Checkout({ paymentsReady }: { paymentsReady: boolean }) {
               className={`flex flex-col gap-3.5 rounded-[18px] p-6 text-right ${on ? "border-2 border-lime bg-ink text-white" : "border border-line bg-white text-text"}`}>
               <span className="flex w-full items-center justify-between">
                 <b className="font-display text-xl">{p.name}</b>
-                {"popular" in p && p.popular && <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${on ? "bg-lime text-ink" : "bg-ink text-lime"}`}>الأكثر مبيعا</span>}
+                {p.popular && <span className={`rounded-full px-2.5 py-1 text-xs font-bold ${on ? "bg-lime text-ink" : "bg-ink text-lime"}`}>الأكثر مبيعا</span>}
               </span>
               <span className="font-display text-3xl font-bold">{p.price} <span className={`text-[15px] font-medium ${on ? "text-line-2" : "text-muted"}`}>ج في الشهر</span></span>
               <span className={`text-sm ${on ? "text-line-2" : "text-muted"}`}>{p.who}</span>

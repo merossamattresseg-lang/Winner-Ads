@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { ads, cheapestCost, productTrend } from "@/lib/mock-data";
+import { cheapestCost, productTrend } from "@/lib/mock-data";
+import { getAds } from "@/lib/data";
 
 function sparkPoints(vals: number[]) {
   const max = Math.max(...vals, 1);
   return vals.map((v, i) => `${((i * 110) / (vals.length - 1)).toFixed(1)},${(30 - (v / max) * 26).toFixed(1)}`).join(" ");
 }
 
-export default function ProductsPage() {
+export default async function ProductsPage() {
+  const ads = await getAds();
   const rows = ads.map((a, i) => {
     const vals = productTrend[a.id] ?? [0, 0];
     const cost = cheapestCost(a.id);

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ads, cheapestCost, getAd, offersFor } from "@/lib/mock-data";
-import { scoreSettings } from "@/lib/score";
+import { ads, cheapestCost, offersFor } from "@/lib/mock-data";
+import { getAds, getScoreSettings } from "@/lib/data";
+import { FavoriteButton } from "@/components/FavoriteButton";
 import { Card, H2, PlayIcon, TierBadge } from "@/components/ui";
 
 export function generateStaticParams() {
@@ -10,11 +11,11 @@ export function generateStaticParams() {
 
 export default async function AdPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const ad = getAd(id);
+  const ad = (await getAds()).find((a) => a.id === id);
   if (!ad) notFound();
   const offers = offersFor(ad.id);
   const cost = cheapestCost(ad.id);
-  const { caps } = scoreSettings;
+  const { caps } = await getScoreSettings();
   const factors = [
     { label: "أيام التشغيل", pct: Math.min(ad.days / caps.days, 1), note: `${ad.days} يوم` },
     { label: "نسخ نفس الكرييتيف", pct: Math.min(ad.copies / caps.copies, 1), note: `${ad.copies} نسخة` },
@@ -41,7 +42,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
           </div>
           <button className="h-12 rounded-[10px] bg-lime text-[15px] font-bold text-ink">تحميل الفيديو بجودة عالية</button>
           <div className="grid grid-cols-2 gap-2">
-            <button className="h-11 rounded-[10px] border border-line-2 bg-white text-sm font-semibold">حفظ في المفضلة</button>
+            <FavoriteButton adId={ad.id} />
             <button className="h-11 rounded-[10px] border border-line-2 bg-white text-sm font-semibold">تفريغ الكلام</button>
             <a href="https://www.facebook.com/ads/library/" target="_blank" rel="noreferrer" className="col-span-2 flex h-11 items-center justify-center rounded-[10px] border border-line-2 bg-white text-sm font-semibold text-text">افتح في مكتبة إعلانات ميتا</a>
           </div>
@@ -51,7 +52,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
           <Card className="flex flex-col gap-4">
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="flex flex-col gap-1.5">
-                <div className="flex items-center gap-2"><TierBadge score={ad.score} /><span className="text-[13px] text-muted">{ad.platform} · مصر</span></div>
+                <div className="flex items-center gap-2"><TierBadge tier={ad.tier} /><span className="text-[13px] text-muted">{ad.platform} · مصر</span></div>
                 <h1 className="font-display text-[26px] font-bold">{ad.product}</h1>
                 <span className="text-sm text-muted">صفحة <Link href={`/advertisers/${ad.advertiserId}`} className="font-bold text-blue-700">{ad.page}</Link> · بدأ {ad.start} · لسه شغال</span>
               </div>
@@ -121,8 +122,9 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
               </div>
             ))}
             {cost && (
-              <div className="mt-2 rounded-[10px] bg-lime-soft px-3.5 py-3 text-sm font-semibold text-lime-text">
-                هامش الربح التقريبي: بيع {ad.sellPrice} ج، وتكلفة {cost} ج من أرخص مورد ({Math.round((1 - cost / ad.sellPrice) * 100)}%)
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-[10px] bg-lime-soft px-3.5 py-3 text-sm font-semibold text-lime-text">
+                <span>هامش الربح التقريبي: بيع {ad.sellPrice} ج، وتكلفة {cost} ج من أرخص مورد ({Math.round((1 - cost / ad.sellPrice) * 100)}%)</span>
+                <Link href={`/calculator?sell=${ad.sellPrice}&cost=${cost}`} className="rounded-lg bg-white px-3 py-1.5 text-text">احسب الربح الصافي</Link>
               </div>
             )}
           </Card>

@@ -1,20 +1,37 @@
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { SUPABASE_KEY, SUPABASE_URL } from "@/lib/supabase/config";
 
-// حماية مؤقتة للوحة الأدمن بكلمة سر من Environment Variables (ADMIN_USER و ADMIN_PASSWORD).
-// هتتبدل بتسجيل دخول Supabase وصلاحية أدمن في المرحلة التانية.
-export function middleware(req: NextRequest) {
-  const user = process.env.ADMIN_USER;
-  const pass = process.env.ADMIN_PASSWORD;
-  if (!user || !pass) {
-    return new NextResponse("لوحة الإدارة مقفولة لحد ما تتحط ADMIN_USER و ADMIN_PASSWORD", { status: 503, headers: { "content-type": "text/plain; charset=utf-8" } });
+// بيجدد جلسة الدخول مع كل طلب، وبيقفل /admin على الحسابات اللي role بتاعها admin بس.
+export async function middleware(req: NextRequest) {
+  let res = NextResponse.next({ request: req });
+  const supabase = createServerClient(SUPABASE_URL, SUPABASE_KEY, {
+    cookies: {
+      getAll: () => req.cookies.getAll(),
+      setAll: (list) => {
+        list.forEach(({ name, value }) => req.cookies.set(name, value));
+        res = NextResponse.next({ request: req });
+        list.forEach(({ name, value, options }) => res.cookies.set(name, value, options));
+      },
+    },
+  });
+  const { data: { user } } = await supabase.auth.getUser();
+
+  const path = req.nextUrl.pathname;
+  const needsLogin = path.startsWith("/admin") || path.startsWith("/account") || path.startsWith("/saved");
+  if (needsLogin && !user) {
+    const to = req.nextUrl.clone();
+    to.pathname = "/login";
+    to.search = `?next=${encodeURIComponent(path)}`;
+    return NextResponse.redirect(to);
   }
-  const auth = req.headers.get("authorization") ?? "";
-  const [scheme, encoded] = auth.split(" ");
-  if (scheme === "Basic" && encoded) {
-    const [u, p] = atob(encoded).split(":");
-    if (u === user && p === pass) return NextResponse.next();
+  if (path.startsWith("/admin") && user) {
+    const { data } = await supabase.from("profiles").select("role").eq("id", user.id).single();
+    if (data?.role !== "admin") return NextResponse.redirect(new URL("/", req.url));
   }
-  return new NextResponse("مطلوب تسجيل دخول", { status: 401, headers: { "WWW-Authenticate": 'Basic realm="WinnerAds Admin"' } });
+  return res;
 }
 
-export const config = { matcher: ["/admin/:path*"] };
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|icon.svg|api/paymob/webhook).*)"],
+};

@@ -9,6 +9,9 @@ const nav = [
   { href: "/products", label: "أفضل المنتجات" },
   { href: "/advertisers/care-shop", label: "المعلنين", match: "/advertisers" },
   { href: "/suppliers", label: "الموردين" },
+  { href: "/calculator", label: "حاسبة الربح" },
+  { href: "/saved", label: "المحفوظات" },
+  { href: "/account", label: "حسابي" },
   { href: "/pricing", label: "الاشتراك" },
 ];
 

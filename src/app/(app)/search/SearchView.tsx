@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
-import { ads, type Platform } from "@/lib/mock-data";
-import { tierOf } from "@/lib/score";
+import type { Platform } from "@/lib/mock-data";
+import type { ScoredAd } from "@/lib/data";
 import { AdCard } from "@/components/AdCard";
 
 const modes = [
@@ -22,7 +22,7 @@ const advanced = [
   ["سعر المنتج في صفحة الهبوط (ج)", "200", "1500"],
 ];
 
-export function SearchView({ initialQuery }: { initialQuery: string }) {
+export function SearchView({ initialQuery, ads }: { initialQuery: string; ads: ScoredAd[] }) {
   const [mode, setMode] = useState(0);
   const [platform, setPlatform] = useState<(typeof platforms)[number]>("الكل");
   const [query, setQuery] = useState(initialQuery);
@@ -35,15 +35,15 @@ export function SearchView({ initialQuery }: { initialQuery: string }) {
       (a) =>
         (platform === "الكل" || a.platform === platform) &&
         a.days >= minDays &&
-        (tier === "الكل" || tierOf(a.score) === tier) &&
+        (tier === "الكل" || a.tier === tier) &&
         (!q || mode !== 0 || a.product.includes(q) || a.copy.includes(q) || a.page.includes(q)),
     );
-  }, [query, platform, minDays, tier, mode]);
+  }, [ads, query, platform, minDays, tier, mode]);
 
   const counts = {
-    super: results.filter((a) => tierOf(a.score) === "super").length,
-    winner: results.filter((a) => tierOf(a.score) === "winner").length,
-    testing: results.filter((a) => tierOf(a.score) === "testing").length,
+    super: results.filter((a) => a.tier === "super").length,
+    winner: results.filter((a) => a.tier === "winner").length,
+    testing: results.filter((a) => a.tier === "testing").length,
   };
 
   return (

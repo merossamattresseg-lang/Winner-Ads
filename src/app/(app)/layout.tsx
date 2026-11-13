@@ -1,5 +1,8 @@
 import { Sidebar } from "@/components/Sidebar";
 
+// الصفحات بتتحدث كل دقيقة عشان تعديلات الأدمن تبان من غير نشر جديد.
+export const revalidate = 60;
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col md:flex-row">

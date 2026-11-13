@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ads, advertisers, getAdvertiser } from "@/lib/mock-data";
+import { advertisers, getAdvertiser } from "@/lib/mock-data";
+import { getAds } from "@/lib/data";
 import { Bars, Card, H2, Stat } from "@/components/ui";
 
 export function generateStaticParams() {
@@ -11,7 +12,7 @@ const weekLabels = ["24 أغسطس", "31", "7 سبتمبر", "14", "21", "28", "
 export default async function AdvertiserPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const adv = getAdvertiser(id);
-  const own = ads.filter((a) => a.advertiserId === adv.id);
+  const own = (await getAds()).filter((a) => a.advertiserId === adv.id);
   const mix = [
     { title: "نوع الكرييتيف", parts: [["فيديو", 72], ["صورة", 19], ["كاروسيل", 9]] },
     { title: "زرار الإعلان", parts: [["اطلب دلوقتي", 64], ["ابعت رسالة", 28], ["اعرف أكتر", 8]] },

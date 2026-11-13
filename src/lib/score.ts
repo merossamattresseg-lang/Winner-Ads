@@ -2,7 +2,13 @@
 // عشان تتعدل من لوحة الأدمن من غير كود.
 export type Tier = "super" | "winner" | "testing";
 
-export const scoreSettings = {
+export type ScoreSettings = {
+  weights: { days: number; copies: number; engagement: number; advertisers: number; supplier: number };
+  caps: { days: number; copies: number; advertisers: number };
+  thresholds: { winner: number; super: number };
+};
+
+export const scoreSettings: ScoreSettings = {
   weights: { days: 35, copies: 25, engagement: 20, advertisers: 15, supplier: 5 },
   caps: { days: 60, copies: 10, advertisers: 5 },
   thresholds: { winner: 60, super: 80 },
@@ -16,7 +22,7 @@ export type ScoreInput = {
   hasSupplier: boolean;
 };
 
-export function winnerScore(i: ScoreInput, s = scoreSettings): number {
+export function winnerScore(i: ScoreInput, s: ScoreSettings = scoreSettings): number {
   const w = s.weights;
   const parts =
     w.days * Math.min(i.days / s.caps.days, 1) +
@@ -28,7 +34,7 @@ export function winnerScore(i: ScoreInput, s = scoreSettings): number {
   return Math.round((parts / total) * 100);
 }
 
-export function tierOf(score: number, s = scoreSettings): Tier {
+export function tierOf(score: number, s: ScoreSettings = scoreSettings): Tier {
   if (score >= s.thresholds.super) return "super";
   if (score >= s.thresholds.winner) return "winner";
   return "testing";

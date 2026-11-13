@@ -1,10 +1,10 @@
 "use client";
 import Link from "next/link";
 import { useState } from "react";
-import type { Ad } from "@/lib/mock-data";
+import type { ScoredAd } from "@/lib/data";
 import { PlayIcon, ScoreRing, TierBadge } from "./ui";
 
-export function AdCard({ ad }: { ad: Ad }) {
+export function AdCard({ ad }: { ad: ScoredAd }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -17,7 +17,7 @@ export function AdCard({ ad }: { ad: Ad }) {
     <article className="flex flex-col overflow-hidden rounded-2xl border border-line bg-white">
       <Link href={`/ads/${ad.id}`} className="relative flex h-56 items-center justify-center bg-thumb text-sm text-muted" aria-label={ad.product}>
         <span className="absolute flex h-12 w-12 items-center justify-center rounded-full bg-ink/75"><PlayIcon /></span>
-        <span className="absolute right-2.5 top-2.5"><TierBadge score={ad.score} /></span>
+        <span className="absolute right-2.5 top-2.5"><TierBadge tier={ad.tier} /></span>
         <span className="absolute bottom-2.5 left-2.5 rounded-md bg-white px-2 py-0.5 text-xs font-semibold text-text">{ad.platform}</span>
       </Link>
       <div className="flex flex-col gap-3 p-4">

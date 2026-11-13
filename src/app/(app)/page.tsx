@@ -1,9 +1,11 @@
 import Link from "next/link";
-import { ads, rivals, supplierOffers, trends } from "@/lib/mock-data";
+import { rivals, supplierOffers, trends } from "@/lib/mock-data";
+import { getAds } from "@/lib/data";
 import { Card, H2, Stat, TierBadge } from "@/components/ui";
 
-export default function HomePage() {
-  const winners = ads.filter((a) => a.score >= 60).slice(0, 4);
+export default async function HomePage() {
+  const ads = await getAds();
+  const winners = ads.filter((a) => a.tier !== "testing").slice(0, 4);
   return (
     <>
       <header className="flex flex-wrap items-center justify-between gap-4">
@@ -35,7 +37,7 @@ export default function HomePage() {
             <Link key={w.id} href={`/ads/${w.id}`} className="flex flex-col overflow-hidden rounded-2xl border border-line bg-white">
               <div className="relative flex h-44 items-center justify-center bg-thumb text-sm text-muted">
                 {w.product}
-                <span className="absolute right-2.5 top-2.5"><TierBadge score={w.score} /></span>
+                <span className="absolute right-2.5 top-2.5"><TierBadge tier={w.tier} /></span>
                 <span className="absolute bottom-2.5 left-2.5 rounded-md bg-white px-2 py-0.5 text-xs font-semibold">{w.platform}</span>
               </div>
               <div className="flex items-center justify-between gap-2.5 px-4 py-3.5">
