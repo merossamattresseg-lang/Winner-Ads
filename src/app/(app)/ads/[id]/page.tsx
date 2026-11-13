@@ -27,7 +27,7 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
       {ad.sample && <p className="rounded-xl bg-[#FEF0C7] px-4 py-2.5 text-sm font-semibold text-[#93370D]">بيانات تجريبية حتى ربط مصادر البيانات.</p>}
       <div className="flex flex-wrap items-start gap-6">
         <section aria-label="الإعلان" className="flex w-full max-w-[400px] flex-[1_1_320px] flex-col gap-3">
-          <div className="relative flex aspect-[9/16] items-center justify-center overflow-hidden rounded-2xl bg-thumb">
+          <div className="relative mx-auto flex aspect-[9/16] max-h-[60vh] w-full items-center justify-center overflow-hidden rounded-2xl bg-thumb md:max-h-none">
             {ad.video ? (
               <video src={ad.video} poster={ad.thumb ?? undefined} controls playsInline className="absolute inset-0 h-full w-full object-cover" />
             ) : ad.thumb ? (
@@ -79,6 +79,18 @@ export default async function AdPage({ params }: { params: Promise<{ id: string 
               </div>
             ))}
           </section>
+
+          {ad.landing && /^https?:\/\//.test(ad.landing) && (
+            <Card className="flex flex-col gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <H2>صفحة الهبوط</H2>
+                <a href={ad.landing} target="_blank" rel="noreferrer" dir="ltr" className="max-w-[60%] truncate text-[13px] text-[#15803D]">{ad.landing.replace(/^https?:\/\//, "")}</a>
+              </div>
+              {/* لقطة تلقائية للصفحة من خدمة mShots المجانية */}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`https://s.wordpress.com/mshots/v1/${encodeURIComponent(ad.landing)}?w=800&h=1200`} alt="لقطة صفحة الهبوط" loading="lazy" className="max-h-[520px] w-full rounded-xl border border-line object-cover object-top" />
+            </Card>
+          )}
 
           {ad.copy && (
             <Card className="flex flex-col gap-3">

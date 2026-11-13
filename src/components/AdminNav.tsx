@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Wordmark } from "./ui";
 
-const items = [["/admin", "نظرة عامة"], ["/admin/users", "العملاء"], ["/admin/data", "مصادر البيانات"]] as const;
+const items = [["/admin", "نظرة عامة"], ["/admin/users", "العملاء"], ["/admin/data", "مصادر البيانات"], ["/admin/coupons", "أكواد الخصم"]] as const;
 
 export function AdminNav({ active }: { active: string }) {
   return (

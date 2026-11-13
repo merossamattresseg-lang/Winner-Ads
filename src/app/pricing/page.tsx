@@ -5,8 +5,8 @@ import { getPlans } from "@/lib/data";
 import { Checkout } from "./Checkout";
 
 
-export default async function PricingPage({ searchParams }: { searchParams: Promise<{ status?: string; success?: string }> }) {
-  const { status, success } = await searchParams;
+export default async function PricingPage({ searchParams }: { searchParams: Promise<{ status?: string; success?: string; coupon?: string; plan?: string }> }) {
+  const { status, success, coupon, plan } = await searchParams;
   const plans = await getPlans();
   const failed = status === "done" && success === "false";
   const done = status === "done" && success !== "false";
@@ -38,7 +38,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
           <h2 className="font-display text-[34px] font-bold">اختر باقتك</h2>
           <p className="text-base text-muted">يُفعَّل الاشتراك فور اكتمال الدفع.</p>
         </div>
-        <Checkout paymentsReady={paymobReady()} plans={plans} />
+        <Checkout paymentsReady={paymobReady()} plans={plans} initialCoupon={coupon} initialPlan={plan} />
       </div>
     </div>
   );

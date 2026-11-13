@@ -1,8 +1,7 @@
 import Link from "next/link";
-import { cheapestCost, productTrend } from "@/lib/mock-data";
+import { getProducts } from "@/lib/data";
 
 export const metadata = { title: "أفضل المنتجات" };
-import { getAds } from "@/lib/data";
 
 function sparkPoints(vals: number[]) {
   const max = Math.max(...vals, 1);
@@ -10,61 +9,55 @@ function sparkPoints(vals: number[]) {
 }
 
 export default async function ProductsPage() {
-  const ads = await getAds();
-  const rows = ads.map((a, i) => {
-    const vals = productTrend[a.id] ?? [0, 0];
-    const cost = cheapestCost(a.id);
-    const change = Math.round(((vals[vals.length - 1] - vals[4]) / Math.max(vals[4], 1)) * 100);
-    return { ...a, rank: i + 1, vals, cost, change };
-  });
+  const { rows, sample } = await getProducts(60);
   return (
     <>
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="font-display text-[28px] font-bold">أفضل المنتجات</h1>
-          <p className="mt-1.5 text-[15px] text-muted">المنتجات مجمّعة من كل الإعلانات بالبحث بالصورة، يعني نفس المنتج عند أكتر من معلن بيظهر مرة واحدة.</p>
+          <p className="mt-1.5 text-[15px] text-muted">المنتج نفسه عند أكثر من معلن يظهر مرة واحدة، مرتبًا حسب التقييم وعدد المعلنين.</p>
         </div>
-        <button className="h-[42px] rounded-[10px] border border-line-2 bg-white px-4 text-sm font-semibold">تصدير Excel</button>
+        {sample && <span className="rounded-full bg-[#FEF0C7] px-3 py-1 text-[13px] font-semibold text-[#93370D]">بيانات تجريبية</span>}
       </header>
-
-      <div className="overflow-x-auto rounded-2xl border border-line bg-white">
-        <table className="w-full min-w-[980px] border-collapse text-sm">
-          <thead>
-            <tr className="bg-[#F9FAFB] text-right text-muted">
-              {["#", "المنتج", "السكور", "معلنين", "نسخ الإعلان", "سعر البيع", "سعر المورد", "الهامش", "إعلانات جديدة 30 يوم"].map((h) => (
-                <th key={h} className="px-3.5 py-3 font-semibold">{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r) => (
-              <tr key={r.id} className="border-t border-[#F2F4F7]">
-                <td className="px-3.5 py-3 font-semibold text-muted">{r.rank}</td>
-                <td className="px-3.5 py-3">
-                  <Link href={`/ads/${r.id}`} className="flex items-center gap-3">
-                    <span className="h-12 w-12 shrink-0 rounded-[9px] bg-thumb" />
-                    <span className="flex flex-col"><b>{r.product}</b><span className="text-xs text-muted">أول ظهور {r.start}</span></span>
-                  </Link>
-                </td>
-                <td className="px-3.5 py-3"><span className="rounded-lg bg-lime-soft px-2 py-1 font-display font-bold text-lime-text">{r.score}</span></td>
-                <td className="px-3.5 py-3">{r.advertisers}</td>
-                <td className="px-3.5 py-3">{r.copies}</td>
-                <td className="px-3.5 py-3">{r.sellPrice ? `${r.sellPrice} ج.م` : "-"}</td>
-                <td className="px-3.5 py-3">{r.cost ? `${r.cost} ج` : "لسه"}</td>
-                <td className="px-3.5 py-3 font-bold text-lime-deep">{r.cost && r.sellPrice ? `${Math.round((1 - r.cost / r.sellPrice) * 100)}%` : "-"}</td>
-                <td className="px-3.5 py-3">
-                  <div className="flex items-center gap-2">
-                    <svg width="110" height="32" viewBox="0 0 110 32" role="img" aria-label="ترند الإعلانات الجديدة">
-                      <polyline points={sparkPoints(r.vals)} fill="none" stroke="#65A30D" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
-                    </svg>
-                    <span dir="ltr" className="text-[13px] font-bold text-lime-deep">+{r.change}%</span>
-                  </div>
-                </td>
+      {rows.length === 0 ? (
+        <p className="rounded-2xl border border-line bg-white p-8 text-center text-muted">لا توجد منتجات بعد. تظهر هنا بعد أول عمليات بحث أو السحب الليلي.</p>
+      ) : (
+        <div className="overflow-x-auto rounded-2xl border border-line bg-white">
+          <table className="w-full min-w-[900px] border-collapse text-sm">
+            <thead>
+              <tr className="bg-[#F9FAFB] text-right text-muted">
+                {["#", "المنتج", "التقييم", "المعلنون", "الإعلانات", "النسخ", "سعر البيع", "الاتجاه"].map((h) => <th key={h} className="px-3.5 py-3 font-semibold">{h}</th>)}
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {rows.map((r, i) => (
+                <tr key={r.key} className="border-t border-[#F2F4F7]">
+                  <td className="px-3.5 py-3 font-semibold text-muted">{i + 1}</td>
+                  <td className="px-3.5 py-3">
+                    <Link href={`/ads/${r.slug}`} className="flex flex-col">
+                      <b>{r.name}</b>
+                      <span className="text-xs text-muted">{r.platform} · منذ {r.first}</span>
+                    </Link>
+                  </td>
+                  <td className="px-3.5 py-3"><span className="rounded-lg bg-lime-soft px-2 py-1 font-display font-bold text-lime-text">{r.score}</span></td>
+                  <td className="px-3.5 py-3">{r.advertisers}</td>
+                  <td className="px-3.5 py-3">{r.ads}</td>
+                  <td className="px-3.5 py-3">{r.copies}</td>
+                  <td className="px-3.5 py-3">{r.sellPrice ? `${r.sellPrice} ج.م` : "-"}</td>
+                  <td className="px-3.5 py-3">
+                    <div className="flex items-center gap-2">
+                      <svg width="110" height="32" viewBox="0 0 110 32" role="img" aria-label="عدد الإعلانات النشطة أسبوعيًا">
+                        <polyline points={sparkPoints(r.trend)} fill="none" stroke="#65A30D" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+                      </svg>
+                      <Link href={`/suppliers?q=${encodeURIComponent(r.name)}`} className="text-xs font-semibold text-[#15803D]">الموردون</Link>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 }

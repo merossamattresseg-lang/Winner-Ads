@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { verifyHmac } from "@/lib/paymob";
+import { redeemCoupon } from "@/lib/coupons";
 import { sendEmail } from "@/lib/email";
+import { sendTelegram } from "@/lib/telegramBot";
 import { sendCapiEvent } from "@/lib/meta";
 import { createAdminClient } from "@/lib/supabase/server";
 
@@ -51,8 +53,12 @@ export async function POST(req: Request) {
     else await admin.from("subscriptions").insert({ user_id: userId, plan_id: planId, status: "active", current_period_end: end });
     if (plan?.monthly_points) await admin.from("credits_ledger").insert({ user_id: userId, delta: plan.monthly_points, reason: `اشتراك ${planId} ${txId}` });
 
+    // تسجيل استخدام كود الخصم لو موجود.
+    const { data: payRow } = await admin.from("payments").select("coupon_code").eq("paymob_transaction_id", txId).maybeSingle();
+    if (payRow?.coupon_code) await redeemCoupon(payRow.coupon_code, userId, txId);
+
     // مكافأة الإحالة: مرة واحدة عند أول اشتراك للعميل المُحال.
-    const { data: prof } = await admin.from("profiles").select("full_name, phone, referred_by, referral_rewarded").eq("id", userId).single();
+    const { data: prof } = await admin.from("profiles").select("full_name, phone, referred_by, referral_rewarded, telegram_chat_id").eq("id", userId).single();
     if (prof?.referred_by && !prof.referral_rewarded) {
       await admin.from("profiles").update({ referral_rewarded: true }).eq("id", userId);
       await admin.from("credits_ledger").insert([
@@ -66,6 +72,7 @@ export async function POST(req: Request) {
     const { data: planRow } = await admin.from("plans").select("name").eq("id", planId).single();
     const amount = Number(obj.amount_cents ?? 0) / 100;
     if (email) await sendEmail({ to: email, kind: "receipt", userId, ref: txId, ctx: { name: prof?.full_name, plan: planRow?.name ?? planId, amount, until: new Date(end).toLocaleDateString("ar-EG"), points: plan?.monthly_points } });
+    if (prof?.telegram_chat_id) await sendTelegram(prof.telegram_chat_id, `تم تفعيل اشتراك ${planRow?.name ?? planId} حتى ${new Date(end).toLocaleDateString("ar-EG")}.`);
     await sendCapiEvent({ name: "Purchase", eventId: `pay_${txId}`, email, phone: prof?.phone, userId, value: amount, path: "/pricing" });
   }
 

@@ -8,7 +8,7 @@ const roles = [["media_buyer", "ميديا باير", "أختبر منتجات �
 const cats = ["صحة", "منزل ومطبخ", "تجميل", "ملابس", "إلكترونيات", "أطفال", "رياضة", "إكسسوارات"];
 const steps = ["العمل", "الأقسام", "التنبيهات"];
 
-export function Onboarding({ regId, telegramBot }: { regId?: string; telegramBot?: string }) {
+export function Onboarding({ regId, telegramLink }: { regId?: string; telegramLink?: string }) {
   const [step, setStep] = useState(1);
   const [role, setRole] = useState<string>("media_buyer");
   const [picked, setPicked] = useState<string[]>(["صحة", "منزل ومطبخ"]);
@@ -66,8 +66,8 @@ export function Onboarding({ regId, telegramBot }: { regId?: string; telegramBot
             <div><h1 className="font-display text-3xl font-bold">كيف تصلك التنبيهات؟</h1><p className="mt-2 text-muted">المنتجات الرابحة وإعلانات المنافسين الجديدة.</p></div>
             <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-line p-4">
               <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#229ED9]"><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 4L3 11l5 2 2 6 3-4 5 4z" fill="#FFFFFF" /></svg></span>
-              <span className="flex flex-[1_1_220px] flex-col"><b className="text-[17px]">بوت WinnerAds على تليجرام</b><span className="text-sm text-muted">{telegramBot ? "يُربط حسابك تلقائيًا عند بدء المحادثة" : "قريبًا"}</span></span>
-              {telegramBot && <a href={`https://t.me/${telegramBot}`} target="_blank" rel="noreferrer" className="flex h-11 items-center rounded-[10px] bg-[#229ED9] px-4 font-bold text-white">ربط تليجرام</a>}
+              <span className="flex flex-[1_1_220px] flex-col"><b className="text-[17px]">بوت WinnerAds على تليجرام</b><span className="text-sm text-muted">{telegramLink ? "يُربط حسابك تلقائيًا عند بدء المحادثة" : "قريبًا"}</span></span>
+              {telegramLink && <a href={telegramLink} target="_blank" rel="noreferrer" className="flex h-11 items-center rounded-[10px] bg-[#229ED9] px-4 font-bold text-white">ربط تليجرام</a>}
             </div>
             <label className="flex items-center gap-2.5 text-[15px]"><input type="checkbox" name="weekly_email" defaultChecked />تقرير أسبوعي عبر البريد الإلكتروني</label>
           </>

@@ -30,6 +30,12 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "upgrade_required", message: "انتهت التجربة المجانية. اشترك لمتابعة البحث." }, { status: 402 });
   }
 
+  // حد أقصى 20 عملية بحث في الدقيقة لكل حساب، لمنع الاستهلاك غير الطبيعي.
+  if (access.userId && q && admin) {
+    const { count } = await admin.from("searches").select("id", { count: "exact", head: true }).eq("user_id", access.userId).gt("created_at", new Date(Date.now() - 60000).toISOString());
+    if ((count ?? 0) >= 20) return NextResponse.json({ error: "rate_limited", message: "عمليات بحث كثيرة. انتظر دقيقة." }, { status: 429 });
+  }
+
   let ids: string[] | null = null;
   let cached = false;
   let charged = false;

@@ -4,6 +4,8 @@ import { CopyButton } from "@/components/CopyButton";
 import { signOut } from "@/app/login/actions";
 import { SITE_URL } from "@/lib/site";
 import { getUserAndProfile } from "@/lib/supabase/server";
+import { botLink } from "@/lib/telegramBot";
+import { DeleteAccount } from "@/components/DeleteAccount";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "الحساب" };
@@ -16,7 +18,7 @@ export default async function AccountPage() {
     supabase.from("subscriptions").select("plan_id, status, current_period_end, auto_renew, canceled_at, plans(name, price_egp)").eq("status", "active").order("current_period_end", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("my_credits").select("balance").maybeSingle(),
     supabase.from("payments").select("id, amount_cents, status, method, created_at").order("created_at", { ascending: false }).limit(10),
-    supabase.from("profiles").select("referral_code, trial_ends_at").eq("id", user!.id).single(),
+    supabase.from("profiles").select("referral_code, trial_ends_at, telegram_chat_id, telegram_link_token").eq("id", user!.id).single(),
     supabase.rpc("my_referral_stats").maybeSingle(),
   ]);
   const plan = sub?.plans as { name?: string; price_egp?: number } | null;
@@ -76,9 +78,18 @@ export default async function AccountPage() {
         )}
       </Card>
 
+      <Card className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex flex-col gap-1">
+          <H2>تنبيهات تليجرام</H2>
+          <span className="text-sm text-muted">{me?.telegram_chat_id ? "مربوط. تصلك التنبيهات على تليجرام." : "اربط حسابك لتصلك تنبيهات المنافسين والمنتجات الرابحة."}</span>
+        </div>
+        {!me?.telegram_chat_id && botLink(me?.telegram_link_token) && <a href={botLink(me?.telegram_link_token)!} target="_blank" rel="noreferrer" className="flex h-11 items-center rounded-[10px] bg-[#229ED9] px-4 font-bold text-white">ربط تليجرام</a>}
+      </Card>
+
       <Card className="flex flex-col gap-2">
         <H2>الأمان</H2>
         <p className="text-sm text-muted">يسمح كل حساب بجلسة واحدة نشطة. تسجيل الدخول من جهاز آخر يُنهي الجلسة الحالية.</p>
+        <DeleteAccount />
       </Card>
     </>
   );

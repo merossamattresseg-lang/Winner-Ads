@@ -4,7 +4,8 @@ import { paymobReady } from "@/lib/paymob";
 import { providerStatus } from "@/lib/providers";
 import { META_PIXEL_ID } from "@/lib/site";
 import { createAdminClient } from "@/lib/supabase/server";
-import { addChannels, addKeyword, saveProviderSettings, syncChannelsNow, syncOneChannel, toggleChannel, toggleKeyword } from "../actions";
+import { botReady } from "@/lib/telegramBot";
+import { addChannels, addKeyword, connectBotWebhook, saveProviderSettings, syncChannelsNow, syncOneChannel, toggleChannel, toggleKeyword } from "../actions";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "مصادر البيانات" };
@@ -37,6 +38,7 @@ export default async function AdminData() {
     ["Meta Pixel", Boolean(META_PIXEL_ID), "NEXT_PUBLIC_META_PIXEL_ID"],
     ["Conversions API", Boolean(process.env.META_CAPI_TOKEN), "META_CAPI_TOKEN"],
     ["المهام اليومية", Boolean(process.env.CRON_SECRET), "CRON_SECRET"],
+    ["بوت تليجرام", botReady(), "TELEGRAM_BOT_TOKEN"],
   ] as const;
 
   return (
@@ -55,6 +57,7 @@ export default async function AdminData() {
               </div>
             ))}
           </div>
+          {botReady() && <form action={connectBotWebhook}><button className="h-9 rounded-lg bg-[#229ED9] px-3 text-sm font-semibold text-white">ربط البوت بالموقع</button></form>}
           <div className="flex flex-wrap gap-6 text-sm text-muted">
             <span>الإعلانات المخزنة: <b className="text-text">{ads?.count ?? 0}</b></span>
             <span>عروض الموردين: <b className="text-text">{offers?.count ?? 0}</b></span>

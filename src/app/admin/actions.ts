@@ -157,3 +157,36 @@ export async function saveProviderSettings(form: FormData) {
   await admin().from("app_settings").upsert({ key: "providers", value, updated_at: new Date().toISOString() });
   revalidatePath("/admin/data");
 }
+
+// ===== أكواد الخصم =====
+export async function createCoupon(form: FormData) {
+  await requireAdmin();
+  const code = String(form.get("code") ?? "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (code.length < 3) return;
+  await admin().from("coupons").upsert({
+    code,
+    percent: num(form.get("percent"), 1, 100),
+    max_uses: form.get("max_uses") ? num(form.get("max_uses"), 1, 1_000_000) : null,
+    expires_at: form.get("expires_at") ? new Date(String(form.get("expires_at"))).toISOString() : null,
+    plan_ids: form.getAll("plan_ids").map(String),
+    first_payment_only: form.get("first_payment_only") === "on",
+    note: String(form.get("note") ?? "") || null,
+    active: true,
+  });
+  revalidatePath("/admin/coupons");
+}
+
+export async function toggleCoupon(form: FormData) {
+  await requireAdmin();
+  await admin().from("coupons").update({ active: form.get("active") === "true" }).eq("code", String(form.get("code")));
+  revalidatePath("/admin/coupons");
+}
+
+// ===== بوت تليجرام =====
+export async function connectBotWebhook() {
+  await requireAdmin();
+  const { setBotWebhook } = await import("@/lib/telegramBot");
+  const { SITE_URL } = await import("@/lib/site");
+  await setBotWebhook(SITE_URL);
+  revalidatePath("/admin/data");
+}

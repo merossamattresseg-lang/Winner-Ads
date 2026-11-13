@@ -65,7 +65,7 @@ export default function CancelPage() {
       {step === 4 && (
         <div className="flex flex-col gap-4">
           <h1 className="font-display text-2xl font-bold">تم تسجيل طلبك</h1>
-          <p className="text-[15px] text-muted">سنتواصل معك لتأكيد التفاصيل. اشتراكك مستمر.</p>
+          <p className="text-[15px] text-muted">{offer.id === "discount_30" ? "استخدم الكود STAY30 عند التجديد لخصم 30%." : "سنتواصل معك لتأكيد التفاصيل. اشتراكك مستمر."}</p>
           <Link href="/account" className="flex h-[46px] items-center justify-center rounded-[10px] bg-ink font-bold text-white">العودة للحساب</Link>
         </div>
       )}

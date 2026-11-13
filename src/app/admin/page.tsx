@@ -48,6 +48,7 @@ export default async function AdminPage() {
           ))}
           <a href="/admin/users" className="flex h-[42px] items-center rounded-[10px] px-3 text-[15px] font-bold text-lime hover:bg-ink-2">العملاء</a>
           <a href="/admin/data" className="flex h-[42px] items-center rounded-[10px] px-3 text-[15px] font-bold text-lime hover:bg-ink-2">مصادر البيانات</a>
+          <a href="/admin/coupons" className="flex h-[42px] items-center rounded-[10px] px-3 text-[15px] font-bold text-lime hover:bg-ink-2">أكواد الخصم</a>
         </nav>
       </aside>
 

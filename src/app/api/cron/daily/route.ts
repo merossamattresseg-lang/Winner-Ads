@@ -5,6 +5,8 @@ import { upsertAds } from "@/lib/ingest";
 import { runApifyMeta, searchMetaSearchApi } from "@/lib/providers";
 import { createAdminClient } from "@/lib/supabase/server";
 import { syncAllChannels } from "@/lib/telegram";
+import { sendTelegram } from "@/lib/telegramBot";
+import { SITE_URL } from "@/lib/site";
 
 export const maxDuration = 300;
 
@@ -50,6 +52,8 @@ export async function GET(req: Request) {
     if (count) {
       const { data: u } = await admin.auth.admin.getUserById(t.user_id);
       const { data: adv } = await admin.from("advertisers").select("name").eq("id", t.advertiser_id).single();
+      const { data: prof } = await admin.from("profiles").select("telegram_chat_id").eq("id", t.user_id).single();
+      if (prof?.telegram_chat_id) await sendTelegram(prof.telegram_chat_id, `${count} إعلانات جديدة من ${adv?.name ?? "منافسك"}\n${SITE_URL}/dashboard`);
       if (u.user?.email) {
         await sendEmail({ to: u.user.email, kind: "competitor", userId: t.user_id, ref: `alert:${t.advertiser_id}:${new Date().toISOString().slice(0, 10)}`, ctx: { note: `${count} إعلانات جديدة من ${adv?.name ?? "منافسك"}` } });
         alerts++;
@@ -59,7 +63,23 @@ export async function GET(req: Request) {
   }
   report.alerts = alerts;
 
-  // 4) التذكيرات
+  // 4) التقرير الأسبوعي (كل إثنين)
+  if (new Date().getUTCDay() === 1) {
+    const { data: top } = await admin.from("ads").select("title, ad_text, score, page_name").order("score", { ascending: false }).gt("created_at", new Date(Date.now() - 7 * 86400000).toISOString()).limit(5);
+    if (top?.length) {
+      const note = top.map((a, i) => `${i + 1}. ${(a.title || (a.ad_text ?? "").split("\n")[0]).slice(0, 50)} (${a.score}) · ${a.page_name ?? ""}`).join("\n");
+      const { data: subscribers } = await admin.from("profiles").select("id").eq("weekly_email", true).limit(1000);
+      const week = new Date().toISOString().slice(0, 10);
+      let weekly = 0;
+      for (const p of subscribers ?? []) {
+        const { data: u } = await admin.auth.admin.getUserById(p.id);
+        if (u.user?.email) { await sendEmail({ to: u.user.email, kind: "weekly", userId: p.id, ref: week, ctx: { note } }); weekly++; }
+      }
+      report.weekly = weekly;
+    }
+  }
+
+  // 5) التذكيرات
   const origin = new URL(req.url).origin;
   const r = await fetch(`${origin}/api/cron/reminders`, { headers: { authorization: `Bearer ${secret}` } }).then((x) => x.json()).catch(() => null);
   report.reminders = r;

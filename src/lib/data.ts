@@ -169,3 +169,37 @@ export async function getAdvertiser(slug: string): Promise<AdvertiserView | null
     weekly, hooks: [], sample: false,
   };
 }
+
+// ===== المنتجات =====
+// تجميع الإعلانات اللي بتبيع نفس المنتج (بالكلمات الأولى من الاسم) عند أكتر من معلن.
+export type ProductRow = { key: string; name: string; slug: string; advertisers: number; ads: number; copies: number; score: number; first: string; trend: number[]; sellPrice: number | null; platform: string };
+
+const productKey = (name: string) => name.replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).filter((w) => w.length > 1).slice(0, 3).join(" ").toLowerCase();
+
+export async function getProducts(limit = 50): Promise<{ rows: ProductRow[]; sample: boolean }> {
+  const real = await hasRealData();
+  const list = real ? await getAds({ limit: 600 }) : await mockScored();
+  const groups = new Map<string, ScoredAd[]>();
+  list.forEach((a) => {
+    const k = productKey(a.product) || a.id;
+    groups.set(k, [...(groups.get(k) ?? []), a]);
+  });
+  const now = Date.now();
+  const rows = [...groups.entries()].map(([key, ads]) => {
+    const best = ads.reduce((m, a) => (a.score > m.score ? a : m), ads[0]);
+    const trend = Array.from({ length: 10 }, (_, i) => {
+      const end = now - (9 - i) * 7 * 86400000;
+      return ads.filter((a) => {
+        const started = now - a.days * 86400000;
+        return started <= end;
+      }).length;
+    });
+    return {
+      key, name: best.product, slug: best.id, advertisers: new Set(ads.map((a) => a.page)).size, ads: ads.length,
+      copies: ads.reduce((s, a) => s + a.copies, 0), score: Math.max(...ads.map((a) => a.score)),
+      first: ads.reduce((m, a) => (a.days > m.days ? a : m), ads[0]).start, trend, sellPrice: best.sellPrice, platform: best.platform,
+    };
+  });
+  rows.sort((a, b) => b.score + b.advertisers * 3 - (a.score + a.advertisers * 3));
+  return { rows: rows.slice(0, limit), sample: !real };
+}
